@@ -212,7 +212,6 @@ func main() {
 		extensions = strings.Split(c.String("e"), ",")
 		exclusions = strings.Split(c.String("exclusions"), ",")
 		showAll = c.Bool("show-all")
-		fmt.Println(showAll)
 		r.Read()
 		//fmt.Println(r.RelPath)
 		//r.Tree("")
