@@ -51,9 +51,9 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --depth DEPTH, -d DEPTH                 DEPTH of TOC (default: 2)
-   --extensions EXTENSIONS, -e EXTENSIONS  post EXTENSIONS (separated by commas, NO spaces) (default: ".md,.markdown")
-   --excludes DIRECTORIES                  exclude DIRECTORIES (separated by commas, NO spaces) (default: "_book")
-   --show-all                              show all posts(include private, posts )
+   --extensions EXTENSIONS, -e EXTENSIONS  post EXTENSIONS (separated by commas, NO spaces, include period `.`) (default: ".md,.markdown")
+   --exclusions DIRECTORIES                exclude DIRECTORIES (separated by commas, NO spaces) (default: "_book")
+   --show-all                              show all posts(include private)
    --help, -h                              show help
    --version, -v                           print the version
 ```

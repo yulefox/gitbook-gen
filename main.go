@@ -186,7 +186,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "extensions, e",
 			Value: ".md,.markdown",
-			Usage: "post `EXTENSIONS` (separated by commas, NO spaces)",
+			Usage: "post `EXTENSIONS` (separated by commas, NO spaces, include period `.`)",
 		},
 		cli.StringFlag{
 			Name:  "exclusions",
