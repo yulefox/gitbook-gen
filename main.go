@@ -12,20 +12,20 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
+	"github.com/yulefox/gitbook-gen/internal"
 )
 
 var (
-	depth     int
-	rootPath  string
-	exts      []string
-	excludes  []string
-	showDraft bool
+	depth      int
+	rootPath   string
+	extensions []string
+	exclusions []string
+	showAll    bool
 )
 
 const (
 	Ignore = iota
 	Directory
-	Draft
 	Private
 	Public
 )
@@ -70,9 +70,9 @@ func (n *Node) Summary(prefix string) {
 		} else if c.LinkName == "" {
 			fmt.Println(fmt.Sprintf("%s - %s", prefix, c.Name))
 		} else if c.Type == Private {
-			fmt.Println(fmt.Sprintf("%s - [[P] %s](%s)", prefix, c.Title, c.LinkName))
-		} else if c.Type == Draft {
-			fmt.Println(fmt.Sprintf("%s - [[D] %s](%s)", prefix, c.Title, c.LinkName))
+			if showAll {
+				fmt.Println(fmt.Sprintf("%s - [[D] %s](%s)", prefix, c.Title, c.LinkName))
+			}
 		} else {
 			fmt.Println(fmt.Sprintf("%s - [%s](%s)", prefix, c.Title, c.LinkName))
 		}
@@ -121,13 +121,7 @@ func (n *Node) Filter(files []os.FileInfo) {
 			RelPath: filepath.Join(n.RelPath, file.Name()),
 		}
 		if file.IsDir() { // directory
-			excluded := false
-			for _, e := range excludes { // excluded
-				if e == c.Name {
-					excluded = true
-				}
-			}
-			if !excluded {
+			if !internal.InSlice(c.Name, exclusions) {
 				c.Depth = n.Depth + 1
 				c.Type = Directory
 				c.Read()
@@ -135,21 +129,17 @@ func (n *Node) Filter(files []os.FileInfo) {
 		} else { // file
 			ext := path.Ext(c.Name)
 			c.Type = Ignore
-			for _, e := range exts {
-				if e == ext {
-					switch c.Name[0] {
-					case '_':
-						c.Type = Draft
-					case '.':
-						c.Type = Private
-					default:
-						c.Type = Public
-					}
-					if c.Name == "README.md" {
-						n.LinkName = filepath.Join(n.RelPath, c.Name)
-					}
-					c.LinkName = filepath.Join(n.RelPath, c.Name)
+			if internal.InSlice(ext, extensions) {
+				switch c.Name[0] {
+				case '_':
+					c.Type = Private
+				default:
+					c.Type = Public
 				}
+				if c.Name == "README.md" {
+					n.LinkName = filepath.Join(n.RelPath, c.Name)
+				}
+				c.LinkName = filepath.Join(n.RelPath, c.Name)
 			}
 		}
 		switch c.Type {
@@ -191,21 +181,21 @@ func main() {
 		cli.IntFlag{
 			Name:  "depth, d",
 			Value: 2,
-			Usage: "depth of TOC",
+			Usage: "`DEPTH` of TOC",
 		},
 		cli.StringFlag{
 			Name:  "extensions, e",
 			Value: ".md,.markdown",
-			Usage: "separated by commas, NO spaces",
+			Usage: "post `EXTENSIONS` (separated by commas, NO spaces)",
 		},
 		cli.StringFlag{
-			Name:  "excludes",
+			Name:  "exclusions",
 			Value: "_book",
-			Usage: "exclude directories",
+			Usage: "exclude `DIRECTORIES` (separated by commas, NO spaces)",
 		},
-		cli.BoolTFlag{
-			Name:  "show-draft",
-			Usage: "show draft or NOT",
+		cli.BoolFlag{
+			Name:  "show-all",
+			Usage: "show all posts(include private)",
 		},
 	}
 	app.Action = func(c *cli.Context) error {
@@ -219,9 +209,10 @@ func main() {
 		}
 
 		depth = c.Int("d")
-		exts = strings.Split(c.String("e"), ",")
-		excludes = strings.Split(c.String("excludes"), ",")
-		showDraft = c.Bool("show-draft")
+		extensions = strings.Split(c.String("e"), ",")
+		exclusions = strings.Split(c.String("exclusions"), ",")
+		showAll = c.Bool("show-all")
+		fmt.Println(showAll)
 		r.Read()
 		//fmt.Println(r.RelPath)
 		//r.Tree("")
